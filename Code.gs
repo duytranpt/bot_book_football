@@ -22,12 +22,11 @@ const MIN_LEAD_MINUTES = 60;      // phải đặt trước tối thiểu 1 ti�
 const CANCEL_MIN_HOURS = 4;       // phải hủy trước tối thiểu 4 tiếng
 
 // ─── CẤU HÌNH TELEGRAM NOTIFICATIONS ─────────────────────────────────────
-// 1. Mở Telegram → tìm @BotFather → gõ /newbot → đặt tên → copy token
-// 2. Bắt đầu chat với bot → gõ /start
-// 3. Mở: https://api.telegram.org/bot<TOKEN>/getUpdates → tìm chat.id
-// Để tắt thông báo, để trống 2 giá trị dưới đây.
-const TELEGRAM_BOT_TOKEN = '8544239050:AAGyHcwHH828H4eisC3WMm-0sMruxxU1VdA';
-const TELEGRAM_CHAT_ID = '6223819939';
+// Token & chat ID được lưu trong Script Properties (không nằm trong code).
+// Trong Apps Script editor: Project Settings → Script Properties → Add:
+//   Key: TELEGRAM_BOT_TOKEN  | Value: token từ @BotFather
+//   Key: TELEGRAM_CHAT_ID    | Value: chat ID (lấy qua /getUpdates)
+// Để tắt thông báo, không thêm 2 key trên.
 
 // Cột trong sheet: A=id B=day C=hour D=field E=teamName F=phone G=note
 //                  H=idempotencyKey I=status J=createdAt K=cancelledAt
@@ -77,12 +76,15 @@ function normalizePhone(raw) {
 }
 
 function sendTelegram(text) {
-  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
+  const props = PropertiesService.getScriptProperties();
+  const token = props.getProperty('TELEGRAM_BOT_TOKEN');
+  const chatId = props.getProperty('TELEGRAM_CHAT_ID');
+  if (!token || !chatId) return;
   try {
-    UrlFetchApp.fetch('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/sendMessage', {
+    UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
       method: 'post',
       contentType: 'application/json',
-      payload: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text })
+      payload: JSON.stringify({ chat_id: Number(chatId), text: text })
     });
   } catch (e) { console.warn('Telegram notify failed:', e.message); }
 }
