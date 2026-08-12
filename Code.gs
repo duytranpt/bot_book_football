@@ -21,6 +21,14 @@ const LAST_END_MIN = 22 * 60 + 30; // 22:30
 const MIN_LEAD_MINUTES = 60;      // phải đặt trước tối thiểu 1 tiếng
 const CANCEL_MIN_HOURS = 4;       // phải hủy trước tối thiểu 4 tiếng
 
+// ─── CẤU HÌNH TELEGRAM NOTIFICATIONS ─────────────────────────────────────
+// 1. Mở Telegram → tìm @BotFather → gõ /newbot → đặt tên → copy token
+// 2. Bắt đầu chat với bot → gõ /start
+// 3. Mở: https://api.telegram.org/bot<TOKEN>/getUpdates → tìm chat.id
+// Để tắt thông báo, để trống 2 giá trị dưới đây.
+const TELEGRAM_BOT_TOKEN = '';
+const TELEGRAM_CHAT_ID = '';
+
 // Cột trong sheet: A=id B=day C=hour D=field E=teamName F=phone G=note
 //                  H=idempotencyKey I=status J=createdAt K=cancelledAt
 const COL = { ID:0, DAY:1, HOUR:2, FIELD:3, TEAM:4, PHONE:5, NOTE:6, IKEY:7, STATUS:8, CREATED:9, CANCELLED:10 };
@@ -66,6 +74,17 @@ function normalizePhone(raw) {
   if (p.indexOf('+84') === 0) p = '0' + p.slice(3);
   else if (p.indexOf('84') === 0 && p.length >= 10) p = '0' + p.slice(2);
   return p;
+}
+
+function sendTelegram(text) {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
+  try {
+    UrlFetchApp.fetch('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/sendMessage', {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text })
+    });
+  } catch (e) { console.warn('Telegram notify failed:', e.message); }
 }
 
 function parseSlotDateTime(day, hour) {
@@ -159,6 +178,17 @@ function handleSet(p) {
       id, p.day, p.hour, p.field, p.teamName, "'" + phone, p.note || '',
       p.idempotencyKey, 'active', new Date(), ''
     ]);
+    // Thông báo Telegram
+    const [sh, sm] = p.hour.split(':').map(Number);
+    sendTelegram(
+      '🔔 Có đội đặt sân mới!\n\n' +
+      '🏟️ Sân: ' + p.field + '\n' +
+      '📅 Ngày: ' + p.day + '\n' +
+      '🕐 Giờ: ' + p.hour + ' – ' + fmtHM(sh * 60 + sm + MATCH_DURATION) + '\n' +
+      '👤 Đội: ' + p.teamName + '\n' +
+      '📞 SĐT: ' + phone +
+      (p.note ? '\n📝 Ghi chú: ' + p.note : '')
+    );
     return { success: true, id: id };
   } finally {
     lock.releaseLock();
@@ -216,6 +246,16 @@ function handleCancel(p) {
         }
         sheet.getRange(i + 1, COL.STATUS + 1).setValue('cancelled');
         sheet.getRange(i + 1, COL.CANCELLED + 1).setValue(new Date());
+        // Thông báo Telegram
+        const [ch, cmm] = hour.split(':').map(Number);
+        sendTelegram(
+          '❌ Lịch đặt bị hủy!\n\n' +
+          '🏟️ Sân: ' + row[COL.FIELD] + '\n' +
+          '📅 Ngày: ' + day + '\n' +
+          '🕐 Giờ: ' + hour + ' – ' + fmtHM(ch * 60 + cmm + MATCH_DURATION) + '\n' +
+          '👤 Đội: ' + row[COL.TEAM] + '\n' +
+          '📞 SĐT: ' + normalizePhone(row[COL.PHONE])
+        );
         return { success: true };
       }
     }
