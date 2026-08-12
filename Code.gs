@@ -26,8 +26,8 @@ const CANCEL_MIN_HOURS = 4;       // phải hủy trước tối thiểu 4 tiế
 // 2. Bắt đầu chat với bot → gõ /start
 // 3. Mở: https://api.telegram.org/bot<TOKEN>/getUpdates → tìm chat.id
 // Để tắt thông báo, để trống 2 giá trị dưới đây.
-const TELEGRAM_BOT_TOKEN = '';
-const TELEGRAM_CHAT_ID = '';
+const TELEGRAM_BOT_TOKEN = '8544239050:AAGyHcwHH828H4eisC3WMm-0sMruxxU1VdA';
+const TELEGRAM_CHAT_ID = '6223819939';
 
 // Cột trong sheet: A=id B=day C=hour D=field E=teamName F=phone G=note
 //                  H=idempotencyKey I=status J=createdAt K=cancelledAt
