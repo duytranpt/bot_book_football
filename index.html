@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đặt sân bóng đá 7 người</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root{
+    --bg:#F2F6F2;
+    --surface:#FFFFFF;
+    --border:#DCE6DD;
+    --text:#132018;
+    --muted:#657468;
+    --pitch:#14532D;
+    --pitch-2:#1D7A44;
+    --bright:#1FA35C;
+    --bright-soft:#E6F6EC;
+    --red:#DC2626;
+    --red-soft:#FCE8E8;
+    --amber:#B45309;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:1rem;
+    background-image:
+      linear-gradient(var(--bg),var(--bg)),
+      repeating-linear-gradient(90deg, rgba(20,83,45,0.035) 0 40px, transparent 40px 80px);
+  }
+  .wrap{max-width:480px;margin:0 auto;width:100%;padding:.5rem 0 2rem;}
+
+  .hero{background:linear-gradient(135deg,var(--pitch) 0%,var(--pitch-2) 100%);border-radius:16px;padding:1.1rem 1.25rem;margin-bottom:1rem;color:#fff;position:relative;overflow:hidden;}
+  .hero::after{content:'';position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;border:2px solid rgba(255,255,255,.12);}
+  .hero::before{content:'';position:absolute;right:10px;bottom:-40px;width:90px;height:90px;border-radius:50%;border:2px solid rgba(255,255,255,.1);}
+  .hero-title{font-family:'Oswald',sans-serif;font-size:21px;font-weight:600;letter-spacing:.01em;position:relative;}
+  .hero-sub{font-size:12px;opacity:.85;margin-top:4px;position:relative;}
+  .info-bar{display:flex;flex-direction:column;gap:4px;margin-top:10px;position:relative;}
+  .info-item{display:flex;align-items:center;gap:6px;font-size:12px;opacity:.9;}
+  .info-item a{color:#fff;text-decoration:none;}
+  .notice{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:7px 10px;font-size:11.5px;margin-top:10px;position:relative;display:flex;gap:6px;align-items:flex-start;}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem;margin-bottom:1rem;}
+  .card-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+
+  .func-tabs{display:flex;gap:8px;margin-bottom:1rem;}
+  .func-tab{flex:1;height:40px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;}
+  .func-tab.active{border-color:var(--pitch);background:var(--pitch);color:#fff;}
+
+  /* Field tabs styled like jersey numbers */
+  .field-tabs{display:flex;gap:8px;margin-bottom:1rem;justify-content:space-between;}
+  .field-tab{flex:1;aspect-ratio:1;max-width:56px;border-radius:50%;border:2px solid var(--border);background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;transition:all .15s;}
+  .field-tab .num{font-size:17px;font-weight:600;color:var(--text);line-height:1;}
+  .field-tab .lbl{font-size:8px;color:var(--muted);letter-spacing:.04em;margin-top:1px;}
+  .field-tab.active{border-color:var(--pitch);background:var(--pitch);}
+  .field-tab.active .num,.field-tab.active .lbl{color:#fff;}
+
+  .day-tabs{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;margin-bottom:1rem;padding-bottom:6px;scrollbar-width:none;user-select:none;cursor:grab;}
+  .day-tabs.is-dragging{cursor:grabbing;}
+  .day-tabs::-webkit-scrollbar{display:none;}
+  .day-tab{flex-shrink:0;padding:6px 12px;border-radius:9px;border:1px solid var(--border);background:#fff;cursor:pointer;text-align:center;min-width:58px;transition:border-color .15s,background .15s;}
+  .day-tab .wd{font-size:10.5px;color:var(--muted);margin-bottom:1px;}
+  .day-tab .dt{font-size:13px;font-weight:600;color:var(--text);}
+  .day-tab.active{border-color:var(--pitch);background:var(--bright-soft);}
+  .day-tab.active .wd,.day-tab.active .dt{color:var(--pitch);}
+  .day-tab.today .dt::after{content:'';display:block;width:4px;height:4px;border-radius:50%;background:var(--bright);margin:2px auto 0;}
+  .pill-today{display:inline-block;background:var(--bright-soft);color:var(--pitch);font-size:9.5px;padding:1px 5px;border-radius:20px;border:1px solid var(--bright);margin-left:3px;vertical-align:middle;}
+
+  .sunday-note{grid-column:1/-1;font-size:11.5px;color:var(--amber);background:#FEF6E9;border:1px solid #F3D591;border-radius:8px;padding:8px 10px;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+
+  .slots-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+  .slot-btn{padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#fff;cursor:pointer;text-align:left;transition:border-color .15s,background .15s;position:relative;}
+  .slot-btn:hover:not(.taken){border-color:var(--bright);background:var(--bright-soft);}
+  .slot-btn.selected{border-color:var(--pitch);background:var(--bright-soft);box-shadow:0 0 0 1px var(--pitch) inset;}
+  .slot-btn.taken{background:#FAFAFA;opacity:.7;cursor:not-allowed;}
+  .slot-time{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;font-family:'Oswald',sans-serif;letter-spacing:.01em;}
+  .slot-btn.selected .slot-time{color:var(--pitch);}
+  .slot-status{font-size:10.5px;font-weight:600;display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:20px;}
+  .status-open{background:var(--bright-soft);color:var(--pitch);}
+  .status-taken{background:var(--red-soft);color:var(--red);}
+  .card-chip{width:9px;height:11px;border-radius:2px;display:inline-block;}
+  .card-chip.green{background:var(--bright);}
+  .card-chip.red{background:var(--red);}
+
+  .info-panel{overflow:hidden;max-height:0;transition:max-height .3s ease,opacity .3s ease;opacity:0;}
+  .info-panel.open{max-height:700px;opacity:1;}
+  .info-inner{border-top:1px solid var(--border);padding-top:14px;margin-top:14px;}
+  .selected-slot-label{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:9px 12px;background:var(--bright-soft);border-radius:9px;border:1px solid var(--bright);}
+  .selected-slot-label span{font-size:12.5px;font-weight:600;color:var(--pitch);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+  .form-group{display:flex;flex-direction:column;gap:5px;}
+  .form-group.full{grid-column:1/-1;}
+  .form-group label{font-size:12.5px;color:var(--muted);font-weight:500;}
+  .form-group input,.form-group textarea{height:38px;padding:0 10px;border-radius:9px;border:1px solid #BCC9BF;background:#fff;color:var(--text);font-size:14px;font-family:inherit;outline:none;}
+  .form-group textarea{height:60px;padding:8px 10px;resize:none;}
+  .form-group input:focus,.form-group textarea:focus{border-color:var(--pitch);box-shadow:0 0 0 2px rgba(20,83,45,0.12);}
+  .btn-review{width:100%;height:42px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--pitch-2),var(--pitch));color:#fff;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .btn-review:active{transform:scale(.98);}
+  .toast{padding:10px 14px;border-radius:9px;font-size:13px;margin-top:10px;display:none;}
+  .toast.show{display:block;}
+  .toast.error{background:var(--red-soft);color:#A32D2D;border:1px solid #F09595;}
+  .toast.success{background:var(--bright-soft);color:#1D6B4D;border:1px solid #6ECFAA;}
+
+  .cancel-section{display:none;}
+  .cancel-section.active{display:block;}
+  .cancel-lookup-row{display:flex;gap:8px;margin-bottom:12px;}
+  .cancel-lookup-row input{flex:1;height:40px;padding:0 10px;border-radius:9px;border:1px solid #BCC9BF;background:#fff;color:var(--text);font-size:14px;font-family:inherit;outline:none;}
+  .cancel-lookup-row input:focus{border-color:var(--pitch);box-shadow:0 0 0 2px rgba(20,83,45,0.12);}
+  .btn-lookup{height:40px;padding:0 16px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--pitch-2),var(--pitch));color:#fff;font-size:13.5px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:5px;}
+  .booking-item{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .booking-item .bi-main{font-size:13px;font-weight:600;color:var(--text);}
+  .booking-item .bi-sub{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .booking-item .bi-cancel{flex-shrink:0;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--red);background:#fff;color:var(--red);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;}
+  .empty-note{font-size:12.5px;color:var(--muted);text-align:center;padding:14px 0;}
+
+  .loading-indicator{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--muted);padding:10px 0;}
+  .spin{width:13px;height:13px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--pitch);animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .overlay{position:fixed;inset:0;background:rgba(10,20,14,.45);display:none;align-items:flex-end;justify-content:center;z-index:50;}
+  .overlay.open{display:flex;}
+  .sheet{background:#fff;width:100%;max-width:480px;border-radius:18px 18px 0 0;padding:1.2rem 1.25rem 1.5rem;animation:slideup .25s ease;}
+  @keyframes slideup{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .sheet-handle{width:36px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 14px;}
+  .sheet-title{font-family:'Oswald',sans-serif;font-size:17px;font-weight:600;margin-bottom:2px;}
+  .sheet-sub{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+  .review-rows{display:flex;flex-direction:column;gap:9px;margin-bottom:16px;}
+  .review-row{display:flex;justify-content:space-between;font-size:13px;gap:10px;}
+  .review-row .rl{color:var(--muted);}
+  .review-row .rv{font-weight:600;color:var(--text);text-align:right;}
+  .btn-confirm{width:100%;height:44px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--pitch-2),var(--pitch));color:#fff;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px;}
+  .btn-confirm-cancel{width:100%;height:44px;border-radius:10px;border:none;background:linear-gradient(135deg,#E24B4A,var(--red));color:#fff;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px;}
+  .btn-cancel-sheet{width:100%;height:40px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:13.5px;font-weight:500;font-family:inherit;cursor:pointer;}
+
+  .success-sheet{text-align:center;}
+  .success-icon{width:56px;height:56px;border-radius:50%;background:var(--bright-soft);color:var(--pitch);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-title">Đặt sân bóng đá 7 người</div>
+    <div class="hero-sub">5 sân cỏ nhân tạo · Trận đấu 90 phút</div>
+    <div class="info-bar">
+      <div class="info-item"><i class="ti ti-map-pin"></i> <a href="https://maps.google.com/?q=THAY_DIA_CHI_SAN_BONG" target="_blank">Điền địa chỉ sân tại đây</a></div>
+      <div class="info-item"><i class="ti ti-phone"></i> Đặt sân / hỗ trợ: <strong style="margin-left:3px;">0xxx xxx xxx</strong></div>
+    </div>
+    <div class="notice"><i class="ti ti-info-circle" style="flex-shrink:0;margin-top:1px;"></i> Sân mở cửa 06:00, trận cuối kết thúc lúc 22:30. Vui lòng đặt trước ít nhất 1 tiếng.</div>
+  </div>
+
+  <div class="func-tabs">
+    <button class="func-tab active" id="tab-book" onclick="switchTab('book')"><i class="ti ti-calendar-plus"></i> Đặt sân</button>
+    <button class="func-tab" id="tab-cancel" onclick="switchTab('cancel')"><i class="ti ti-calendar-x"></i> Tra cứu & Hủy</button>
+  </div>
+
+  <!-- BOOKING SECTION -->
+  <div id="booking-section">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-shirt-sport"></i> Chọn sân</div>
+      <div class="field-tabs" id="field-tabs"></div>
+
+      <div class="card-title"><i class="ti ti-calendar"></i> Chọn ngày</div>
+      <div class="day-tabs" id="day-tabs"></div>
+
+      <div class="card-title"><i class="ti ti-clock"></i> Chọn khung giờ</div>
+      <div class="loading-indicator" id="loading-indicator" style="display:none;"><div class="spin"></div> Đang tải lịch sân...</div>
+      <div class="slots-grid" id="slots-grid"></div>
+
+      <div class="info-panel" id="info-panel">
+        <div class="info-inner">
+          <div class="selected-slot-label" id="selected-slot-label"></div>
+          <div class="form-row">
+            <div class="form-group full">
+              <label>Tên đội / người đặt</label>
+              <input type="text" id="input-team" placeholder="VD: Đội FC Thứ 7">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group full">
+              <label>Số điện thoại</label>
+              <input type="tel" id="input-phone" placeholder="09xxxxxxxx">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group full">
+              <label>Ghi chú (không bắt buộc)</label>
+              <textarea id="input-note" placeholder="VD: cần thuê thêm áo bib"></textarea>
+            </div>
+          </div>
+          <button class="btn-review" onclick="openReviewSheet()"><i class="ti ti-clipboard-check"></i> Xem lại & đặt sân</button>
+          <div class="toast" id="booking-toast"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANCEL SECTION -->
+  <div id="cancel-section" class="cancel-section">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-search"></i> Tra cứu lịch đã đặt</div>
+      <div class="cancel-lookup-row">
+        <input type="tel" id="lookup-phone" placeholder="Nhập số điện thoại đã đặt">
+        <button class="btn-lookup" onclick="doLookup()"><i class="ti ti-search"></i> Tìm</button>
+      </div>
+      <div id="lookup-results"></div>
+      <div class="toast" id="cancel-toast"></div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:8px;">Bạn chỉ có thể hủy lịch tối đa trước 4 tiếng so với giờ đá.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- REVIEW / CONFIRM BOOKING SHEET -->
+<div class="overlay" id="overlay-review" onclick="closeReviewSheetOutside(event)">
+  <div class="sheet" id="sheet-review">
+    <div class="sheet-handle"></div>
+    <p class="sheet-title">Xác nhận đặt sân</p>
+    <p class="sheet-sub">Kiểm tra lại thông tin trước khi xác nhận</p>
+    <div class="review-rows" id="review-rows"></div>
+    <button class="btn-confirm" id="btn-confirm-booking" onclick="doConfirmBooking()"><i class="ti ti-check"></i> Xác nhận đặt sân</button>
+    <button class="btn-cancel-sheet" onclick="closeReviewSheet()">Quay lại chỉnh sửa</button>
+  </div>
+</div>
+
+<!-- SUCCESS SHEET -->
+<div class="overlay" id="overlay-success">
+  <div class="sheet success-sheet" id="sheet-success">
+    <div class="success-icon"><i class="ti ti-circle-check"></i></div>
+    <p class="sheet-title">Đặt sân thành công!</p>
+    <p class="sheet-sub">Vui lòng đến đúng giờ. Lưu số điện thoại để tra cứu/hủy lịch sau này.</p>
+    <button class="btn-confirm" onclick="resetToNewBooking()"><i class="ti ti-plus"></i> Đặt sân khác</button>
+    <button class="btn-cancel-sheet" onclick="closeSuccessSheet()">Đóng</button>
+  </div>
+</div>
+
+<!-- CANCEL CONFIRM SHEET -->
+<div class="overlay" id="overlay-cancel" onclick="closeCancelSheetOutside(event)">
+  <div class="sheet" id="sheet-cancel">
+    <div class="sheet-handle"></div>
+    <p class="sheet-title">Xác nhận hủy lịch</p>
+    <p class="sheet-sub" style="color:#A32D2D;">Thao tác này không thể hoàn tác</p>
+    <div class="review-rows" id="cancel-review-rows"></div>
+    <button class="btn-confirm-cancel" id="btn-confirm-cancel" onclick="doCancelBooking()"><i class="ti ti-calendar-x"></i> Xác nhận hủy lịch</button>
+    <button class="btn-cancel-sheet" onclick="closeCancelSheet()">Giữ lại lịch này</button>
+  </div>
+</div>
+
+<script>
+// ─── CẤU HÌNH: THAY URL NÀY BẰNG URL WEB APP APPS SCRIPT CỦA BẠN ──────
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0ySWc4CtdKAZbDU5fN1pn1nCwZy0inAbCLDTwGlr4yUJaVWPIs8npuYJIRNHgNRSnDQ/exec";
+
+// ─── CẤU HÌNH SÂN & KHUNG GIỜ ──────────────────────────────────────
+const FIELDS = ['Sân 1','Sân 2','Sân 3','Sân 4','Sân 5'];
+const OPEN_MIN = 6 * 60;        // 06:00
+const MATCH_DURATION = 90;      // phút / trận
+const LAST_END_MIN = 22 * 60 + 30; // 22:30
+const MIN_LEAD_MINUTES = 60;    // phải đặt trước tối thiểu 1 tiếng
+const CANCEL_MIN_HOURS = 4;     // phải hủy trước tối thiểu 4 tiếng
+
+function fmtHM(min) {
+  const h = Math.floor(min / 60), m = min % 60;
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+}
+function generateSlots() {
+  const slots = [];
+  let start = OPEN_MIN;
+  while (start + MATCH_DURATION <= LAST_END_MIN) {
+    const end = start + MATCH_DURATION;
+    slots.push({ start: fmtHM(start), end: fmtHM(end), label: fmtHM(start) + ' - ' + fmtHM(end) });
+    start = end;
+  }
+  return slots;
+}
+const SLOTS = generateSlots(); // 11 khung giờ mặc định: 06:00 → 22:30
+
+let schedule = {};        // schedule[field][day][hourStart] = true nếu đã có đội đặt
+let selectedField = FIELDS[0];
+let selectedDay = null;
+let selectedHour = null;
+let cancelTarget = null;
+
+function getNext10Days() {
+  const days = [];
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  for (let i = 0; i < 10; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const key = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+    days.push({ date: d, key });
+  }
+  return days;
+}
+const DAYS_LIST = getNext10Days();
+function wdLabel(d) { return ['CN','T2','T3','T4','T5','T6','T7'][d.getDay()]; }
+
+function initScheduleShape() {
+  FIELDS.forEach(f => {
+    schedule[f] = {};
+    DAYS_LIST.forEach(({key}) => {
+      schedule[f][key] = {};
+      SLOTS.forEach(s => { schedule[f][key][s.start] = false; });
+    });
+  });
+}
+initScheduleShape();
+
+// ─── CHUẨN HOÁ SỐ ĐIỆN THOẠI (+84 / 84 → 0) ──────────────────
+function normalizePhone(raw) {
+  if (!raw) return raw;
+  let p = String(raw).trim().replace(/[\s.\-]/g, '');
+  if (p.startsWith('+84')) p = '0' + p.slice(3);
+  else if (p.startsWith('84') && p.length >= 10) p = '0' + p.slice(2);
+  return p;
+}
+
+// ─── IDEMPOTENCY KEY: tránh đặt trùng khi tự động thử lại request ────
+function generateIdempotencyKey() {
+  if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  return 'k_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+}
+
+// ─── JSONP: Apps Script Web App không set CORS nên dùng script-tag ───
+function jsonpFetch(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = '__pitch_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => { cleanup(); reject(new Error('JSONP timeout')); }, 25000);
+    window[cbName] = function(data) { cleanup(); resolve(data); };
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
+    script.onerror = () => { cleanup(); reject(new Error('JSONP error')); };
+    document.head.appendChild(script);
+  });
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+async function jsonpFetchWithRetry(url, maxRetries = 2) {
+  let lastErr;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try { return await jsonpFetch(url); }
+    catch (err) {
+      lastErr = err;
+      if (attempt < maxRetries) await sleep(1000 * Math.pow(2, attempt));
+    }
+  }
+  throw lastErr;
+}
+
+function applyAvailabilityToSchedule(data) {
+  initScheduleShape();
+  if (Array.isArray(data)) {
+    data.forEach(item => {
+      const { day, hour, field } = item;
+      if (schedule[field] && schedule[field][day] && schedule[field][day][hour] !== undefined) {
+        schedule[field][day][hour] = true;
+      }
+    });
+  }
+}
+
+async function loadScheduleFromSheet(silent = false) {
+  if (!silent) document.getElementById('loading-indicator').style.display = 'flex';
+  try {
+    const data = await jsonpFetchWithRetry(SCRIPT_URL + '?action=availability');
+    applyAvailabilityToSchedule(data);
+  } catch (err) {
+    console.warn('Không tải được lịch sân:', err.message);
+  }
+  if (!silent) document.getElementById('loading-indicator').style.display = 'none';
+  renderSlots();
+}
+
+async function sendBooking(params) {
+  const qs = new URLSearchParams({ action: 'set', ...params }).toString();
+  return await jsonpFetchWithRetry(SCRIPT_URL + '?' + qs);
+}
+async function sendLookup(params) {
+  const qs = new URLSearchParams({ action: 'lookup', ...params }).toString();
+  return await jsonpFetchWithRetry(SCRIPT_URL + '?' + qs);
+}
+async function sendCancelBooking(params) {
+  const qs = new URLSearchParams({ action: 'cancel', ...params }).toString();
+  return await jsonpFetchWithRetry(SCRIPT_URL + '?' + qs);
+}
+
+function switchTab(tab) {
+  const isBook = tab === 'book';
+  document.getElementById('tab-book').classList.toggle('active', isBook);
+  document.getElementById('tab-cancel').classList.toggle('active', !isBook);
+  document.getElementById('booking-section').style.display = isBook ? 'block' : 'none';
+  document.getElementById('cancel-section').style.display = isBook ? 'none' : 'block';
+}
+
+function renderFieldTabs() {
+  const c = document.getElementById('field-tabs');
+  c.innerHTML = '';
+  FIELDS.forEach((f, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'field-tab' + (f === selectedField ? ' active' : '');
+    btn.innerHTML = '<div class="num">' + (i+1) + '</div><div class="lbl">SÂN</div>';
+    btn.addEventListener('click', () => selectField(f));
+    c.appendChild(btn);
+  });
+}
+function selectField(f) {
+  selectedField = f;
+  selectedHour = null;
+  hideInfoPanel();
+  renderFieldTabs();
+  renderSlots();
+}
+
+function selectDay(key) {
+  selectedDay = key;
+  selectedHour = null;
+  hideInfoPanel();
+  renderDayTabs();
+  renderSlots();
+  const c = document.getElementById('day-tabs');
+  const active = c.querySelector('.day-tab.active');
+  if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+function renderDayTabs() {
+  const c = document.getElementById('day-tabs');
+  c.innerHTML = '';
+  DAYS_LIST.forEach(({ date, key }, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'day-tab' + (key === selectedDay ? ' active' : '') + (i === 0 ? ' today' : '');
+    btn.innerHTML =
+      '<div class="wd">' + wdLabel(date) + (i === 0 ? ' <span class="pill-today">hôm nay</span>' : '') + '</div>' +
+      '<div class="dt">' + date.getDate() + '/' + (date.getMonth()+1) + '</div>';
+    btn.addEventListener('click', () => { if (c._isDragging) return; selectDay(key); });
+    c.appendChild(btn);
+  });
+  let startX = 0, scrollLeft = 0;
+  c._isDragging = false;
+  c.addEventListener('mousedown', e => {
+    c._isDragging = false; startX = e.pageX - c.offsetLeft; scrollLeft = c.scrollLeft;
+    c._mousedown = true; c.classList.add('is-dragging');
+  });
+  c.addEventListener('mousemove', e => {
+    if (!c._mousedown) return;
+    const dx = e.pageX - c.offsetLeft - startX;
+    if (Math.abs(dx) > 4) c._isDragging = true;
+    c.scrollLeft = scrollLeft - dx;
+  });
+  ['mouseup','mouseleave'].forEach(ev => {
+    c.addEventListener(ev, () => { c._mousedown = false; c.classList.remove('is-dragging'); setTimeout(() => { c._isDragging = false; }, 0); });
+  });
+}
+
+function isSlotBookable(dayKey, slot) {
+  const dayObj = DAYS_LIST.find(d => d.key === dayKey);
+  if (!dayObj) return false;
+  const [h, m] = slot.start.split(':').map(Number);
+  const slotDate = new Date(dayObj.date.getFullYear(), dayObj.date.getMonth(), dayObj.date.getDate(), h, m, 0);
+  const now = new Date();
+  return (slotDate.getTime() - now.getTime()) >= MIN_LEAD_MINUTES * 60000;
+}
+
+function renderSlots() {
+  const grid = document.getElementById('slots-grid');
+  if (!selectedDay || !selectedField) { grid.innerHTML = ''; return; }
+  grid.innerHTML = '';
+  SLOTS.forEach(slot => {
+    const taken = !!(schedule[selectedField][selectedDay] && schedule[selectedField][selectedDay][slot.start]);
+    const bookable = isSlotBookable(selectedDay, slot);
+    const disabled = taken || !bookable;
+    const btn = document.createElement('button');
+    btn.className = 'slot-btn' + (disabled ? ' taken' : '') + (selectedHour === slot.start && !disabled ? ' selected' : '');
+    const statusHtml = taken
+      ? '<span class="slot-status status-taken"><span class="card-chip red"></span>Đã có đội</span>'
+      : (!bookable
+        ? '<span class="slot-status status-taken"><span class="card-chip red"></span>Hết hạn đặt</span>'
+        : '<span class="slot-status status-open"><span class="card-chip green"></span>Còn trống</span>');
+    btn.innerHTML = '<div class="slot-time">' + slot.label + '</div>' + statusHtml;
+    if (!disabled) {
+      btn.addEventListener('click', () => selectHour(slot.start));
+    }
+    grid.appendChild(btn);
+  });
+}
+
+function selectHour(hourStart) {
+  selectedHour = hourStart;
+  renderSlots();
+  showInfoPanel();
+}
+
+function showInfoPanel() {
+  const slot = SLOTS.find(s => s.start === selectedHour);
+  const dayObj = DAYS_LIST.find(d => d.key === selectedDay);
+  document.getElementById('selected-slot-label').innerHTML =
+    '<i class="ti ti-calendar-event" style="color:var(--pitch);"></i> <span>' + selectedField + ' · ' + wdLabel(dayObj.date) + ' ' + dayObj.date.getDate() + '/' + (dayObj.date.getMonth()+1) + ' · ' + slot.label + '</span>';
+  document.getElementById('info-panel').classList.add('open');
+}
+function hideInfoPanel() {
+  document.getElementById('info-panel').classList.remove('open');
+  document.getElementById('booking-toast').className = 'toast';
+}
+
+function showToast(id, type, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+}
+
+// ─── REVIEW & CONFIRM BOOKING ──────────────────────────────────────
+let pendingIdempotencyKey = null;
+
+function openReviewSheet() {
+  const team = document.getElementById('input-team').value.trim();
+  const phoneRaw = document.getElementById('input-phone').value.trim();
+  const phone = normalizePhone(phoneRaw);
+  if (!team) return showToast('booking-toast', 'error', 'Vui lòng nhập tên đội / người đặt.');
+  if (!/^0\d{9,10}$/.test(phone)) return showToast('booking-toast', 'error', 'Số điện thoại không hợp lệ.');
+
+  const slot = SLOTS.find(s => s.start === selectedHour);
+  const dayObj = DAYS_LIST.find(d => d.key === selectedDay);
+  const note = document.getElementById('input-note').value.trim();
+
+  document.getElementById('review-rows').innerHTML = `
+    <div class="review-row"><span class="rl">Sân</span><span class="rv">${selectedField}</span></div>
+    <div class="review-row"><span class="rl">Ngày</span><span class="rv">${wdLabel(dayObj.date)} ${dayObj.date.getDate()}/${dayObj.date.getMonth()+1}</span></div>
+    <div class="review-row"><span class="rl">Giờ đá</span><span class="rv">${slot.label}</span></div>
+    <div class="review-row"><span class="rl">Đội / người đặt</span><span class="rv">${team}</span></div>
+    <div class="review-row"><span class="rl">Số điện thoại</span><span class="rv">${phone}</span></div>
+    ${note ? `<div class="review-row"><span class="rl">Ghi chú</span><span class="rv">${note}</span></div>` : ''}
+  `;
+  pendingIdempotencyKey = generateIdempotencyKey();
+  document.getElementById('overlay-review').classList.add('open');
+}
+function closeReviewSheet() { document.getElementById('overlay-review').classList.remove('open'); }
+function closeReviewSheetOutside(e) { if (e.target.id === 'overlay-review') closeReviewSheet(); }
+
+async function doConfirmBooking() {
+  const btn = document.getElementById('btn-confirm-booking');
+  btn.disabled = true; btn.innerHTML = '<div class="spin" style="border-top-color:#fff;border-color:rgba(255,255,255,.4);"></div> Đang xử lý...';
+  try {
+    const team = document.getElementById('input-team').value.trim();
+    const phone = normalizePhone(document.getElementById('input-phone').value.trim());
+    const note = document.getElementById('input-note').value.trim();
+    const res = await sendBooking({
+      field: selectedField, day: selectedDay, hour: selectedHour,
+      teamName: team, phone, note, idempotencyKey: pendingIdempotencyKey
+    });
+    if (res && res.success) {
+      closeReviewSheet();
+      document.getElementById('overlay-success').classList.add('open');
+      await loadScheduleFromSheet(true);
+    } else {
+      showToast('booking-toast', 'error', (res && res.error) || 'Có lỗi xảy ra, vui lòng thử lại.');
+      closeReviewSheet();
+      await loadScheduleFromSheet(true);
+    }
+  } catch (err) {
+    showToast('booking-toast', 'error', 'Không kết nối được máy chủ. Vui lòng thử lại.');
+    closeReviewSheet();
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Xác nhận đặt sân';
+  }
+}
+
+function resetToNewBooking() {
+  document.getElementById('overlay-success').classList.remove('open');
+  document.getElementById('input-team').value = '';
+  document.getElementById('input-phone').value = '';
+  document.getElementById('input-note').value = '';
+  selectedHour = null;
+  hideInfoPanel();
+  renderSlots();
+}
+function closeSuccessSheet() { document.getElementById('overlay-success').classList.remove('open'); resetToNewBooking(); }
+
+// ─── LOOKUP & CANCEL ────────────────────────────────────────────────
+async function doLookup() {
+  const phoneRaw = document.getElementById('lookup-phone').value.trim();
+  const phone = normalizePhone(phoneRaw);
+  const resultsEl = document.getElementById('lookup-results');
+  if (!/^0\d{9,10}$/.test(phone)) return showToast('cancel-toast', 'error', 'Số điện thoại không hợp lệ.');
+  resultsEl.innerHTML = '<div class="loading-indicator" style="display:flex;"><div class="spin"></div> Đang tìm kiếm...</div>';
+  document.getElementById('cancel-toast').className = 'toast';
+  try {
+    const res = await sendLookup({ phone });
+    if (!res || !res.success) {
+      resultsEl.innerHTML = '';
+      return showToast('cancel-toast', 'error', (res && res.error) || 'Không tìm thấy lịch đặt.');
+    }
+    const bookings = res.bookings || [];
+    if (bookings.length === 0) {
+      resultsEl.innerHTML = '<div class="empty-note">Không có lịch đặt nào với số điện thoại này.</div>';
+      return;
+    }
+    resultsEl.innerHTML = '';
+    bookings.forEach(b => {
+      const slot = SLOTS.find(s => s.start === b.hour);
+      const [y,m,d] = b.day.split('-').map(Number);
+      const dateObj = new Date(y, m-1, d);
+      const item = document.createElement('div');
+      item.className = 'booking-item';
+      item.innerHTML = `
+        <div>
+          <div class="bi-main">${b.field} · ${slot ? slot.label : b.hour}</div>
+          <div class="bi-sub">${wdLabel(dateObj)} ${dateObj.getDate()}/${dateObj.getMonth()+1} · ${b.teamName}</div>
+        </div>
+        <button class="bi-cancel">Hủy</button>
+      `;
+      item.querySelector('.bi-cancel').addEventListener('click', () => openCancelSheet(b, phone));
+      resultsEl.appendChild(item);
+    });
+  } catch (err) {
+    resultsEl.innerHTML = '';
+    showToast('cancel-toast', 'error', 'Không kết nối được máy chủ. Vui lòng thử lại.');
+  }
+}
+
+function openCancelSheet(booking, phone) {
+  cancelTarget = { id: booking.id, phone };
+  const slot = SLOTS.find(s => s.start === booking.hour);
+  const [y,m,d] = booking.day.split('-').map(Number);
+  const dateObj = new Date(y, m-1, d);
+  document.getElementById('cancel-review-rows').innerHTML = `
+    <div class="review-row"><span class="rl">Sân</span><span class="rv">${booking.field}</span></div>
+    <div class="review-row"><span class="rl">Ngày</span><span class="rv">${wdLabel(dateObj)} ${dateObj.getDate()}/${dateObj.getMonth()+1}</span></div>
+    <div class="review-row"><span class="rl">Giờ đá</span><span class="rv">${slot ? slot.label : booking.hour}</span></div>
+    <div class="review-row"><span class="rl">Đội / người đặt</span><span class="rv">${booking.teamName}</span></div>
+  `;
+  document.getElementById('overlay-cancel').classList.add('open');
+}
+function closeCancelSheet() { document.getElementById('overlay-cancel').classList.remove('open'); cancelTarget = null; }
+function closeCancelSheetOutside(e) { if (e.target.id === 'overlay-cancel') closeCancelSheet(); }
+
+async function doCancelBooking() {
+  if (!cancelTarget) return;
+  const btn = document.getElementById('btn-confirm-cancel');
+  btn.disabled = true; btn.innerHTML = '<div class="spin" style="border-top-color:#fff;border-color:rgba(255,255,255,.4);"></div> Đang hủy...';
+  try {
+    const res = await sendCancelBooking({ id: cancelTarget.id, phone: cancelTarget.phone });
+    closeCancelSheet();
+    if (res && res.success) {
+      showToast('cancel-toast', 'success', 'Đã hủy lịch thành công.');
+      doLookup();
+    } else {
+      showToast('cancel-toast', 'error', (res && res.error) || 'Không thể hủy lịch, vui lòng thử lại.');
+    }
+  } catch (err) {
+    closeCancelSheet();
+    showToast('cancel-toast', 'error', 'Không kết nối được máy chủ. Vui lòng thử lại.');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-calendar-x"></i> Xác nhận hủy lịch';
+  }
+}
+
+// ─── KHỞI TẠO ────────────────────────────────────────────────────────
+renderFieldTabs();
+renderDayTabs();
+selectDay(DAYS_LIST[0].key);
+loadScheduleFromSheet();
+setInterval(() => loadScheduleFromSheet(true), 30000); // tự làm mới mỗi 30s
+</script>
+</body>
+</html>
